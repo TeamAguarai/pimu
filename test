@@ -1,0 +1,19 @@
+#!/bin/bash
+
+if [ "$#" -lt 2 ]; then
+    echo "Uso: $0 <SOURCE_CPP> <DIRNAME> <OUTPUT_EXECUTABLE_NAME>"
+    exit 1
+fi
+
+
+FILE_TO_TEST=$1
+DIRNAME=$2 
+OUTPUT=$3
+
+
+./scripts/simplify.sh ./src ./include/ Imu $DIRNAME
+
+cp $FILE_TO_TEST $DIRNAME
+
+# crear makefile
+echo -e "all:\n\tg++ $(basename "$FILE_TO_TEST") Imu.cpp -o $OUTPUT -lwiringPi -li2c \n\t./$OUTPUT" > $DIRNAME/makefile
