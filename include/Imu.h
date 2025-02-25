@@ -26,18 +26,20 @@ public:
     float getXAngle();
     float getYAngle();
     
-    void _update();
 private:
-    int _calibrateGyro(int durationSeconds);
+    MPU9250 _module;
+    Gyro _gyro;
+
     bool _initialized = false;
     
     float _xAngle = 0.0;
     float _yAngle = 0.0;
 
     const float _d2r = 3.14159265359f/180.0f; 
+
+    void _update();
+    int _calibrateGyro(int durationSeconds);
     
-    MPU9250 _module;
-    Gyro _gyro;
 };
 
 } // namespace pimu
