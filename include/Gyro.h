@@ -15,15 +15,7 @@ namespace pimu
 class Gyro
 {
 public:
-    enum Range
-    {
-        GYRO_RANGE_250DPS,
-        GYRO_RANGE_500DPS,
-        GYRO_RANGE_1000DPS,
-        GYRO_RANGE_2000DPS
-    };  
-
-    Gyro(MPU9250 module);
+    Gyro(MPU9250 &module);
 
     int calibrate(int durationSeconds);
     int calibrate(int durationSeconds, std::string file_to_save_calibdata);
@@ -44,8 +36,8 @@ public:
 
     void setFilterConstant(float constant);
 
+    MPU9250 &_module;
 private:
-    MPU9250 _module;
     pimu::LowPass<float> _filters[3]; // one for each axis (x,y,z)
 
     float _xbias = 0.0, _ybias = 0.0, _zbias = 0.0; // bias

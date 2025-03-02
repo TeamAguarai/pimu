@@ -80,6 +80,7 @@ public:
         LP_ACCEL_ODR_250HZ = 10,
         LP_ACCEL_ODR_500HZ = 11
     };
+
     MPU9250();
     int begin();
 
@@ -102,14 +103,13 @@ public:
     float getMagY_uT();
     float getMagZ_uT();
     float getTemperature_C();
-
-    float _gyroScale  = 0.0f;
-    
+    bool initialized = false;
+    int initCode = 0;
 protected:
-    // for setup mpu9250 only once
-    bool _initialized = false;
+
     // i2c
-    uint8_t _address = 0x00;
+    uint8_t _address = 0x68; // I2C address
+
     const uint32_t _i2cRate = 400000; // 400 kHz
     size_t _numBytes = 0; // number of bytes received from I2C
     // spi
@@ -149,6 +149,7 @@ protected:
     uint8_t _womThreshold = 0;
     // scale factors
     float _accelScale = 0.0f;
+    float _gyroScale  = 0.0f;
     
     float _magScaleX  = 0.0f;
     float _magScaleY  = 0.0f;

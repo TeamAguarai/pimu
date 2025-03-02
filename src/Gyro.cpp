@@ -6,7 +6,7 @@ namespace pimu
 {
 
 /* pass mpu9250 module as parameter */
-Gyro::Gyro(MPU9250 module):_module(module) {
+Gyro::Gyro(MPU9250 &module):_module(module) {
     // low pass filters wont have effect by default 
     this->setFilterConstant(1.0); 
 }
@@ -43,34 +43,19 @@ int Gyro::calibrate(std::string file_to_load_calibration_from) {
 /* estimates the gyro biases by averaging, run this process for a duration in seconds */
 int Gyro::_calibration(int durationSeconds) {
 
-    // set the range, bandwidth, and srd
-    if (this->_module.setGyroRange(this->_module.GYRO_RANGE_250DPS) < 0) {
-        std::cerr<<__FILE__<<__LINE__<<": error."<<std::endl;
-        return -1;
-    }
-    if (this->_module.setDlpfBandwidth(this->_module.DLPF_BANDWIDTH_20HZ) < 0) {
-        std::cerr<<__FILE__<<__LINE__<<": error."<<std::endl;
-        return -2;
-    }
-    if (this->_module.setSrd(19) < 0) {
-        std::cerr<<__FILE__<<__LINE__<<": error."<<std::endl;
-        return -3;
-    }
-
-
-    _calibrationNumSamples = 0;
-    float gxbD = 0.0;
-    float gzbD = 0.0;
-    float gybD = 0.0;
-    this->setBiasX_rads(0.0);
-    this->setBiasY_rads(0.0);
-    this->setBiasZ_rads(0.0);
+    this->_calibrationNumSamples = 0;
+    float gxbD = 0.0f;
+    float gzbD = 0.0f;
+    float gybD = 0.0f;
+    this->setBiasX_rads(0.0f);
+    this->setBiasY_rads(0.0f);
+    this->setBiasZ_rads(0.0f);
 
     // take samples and find bias
     auto start = std::chrono::high_resolution_clock::now();
     auto end = start + std::chrono::seconds(durationSeconds);
     while (std::chrono::high_resolution_clock::now() < end) {
-        _calibrationNumSamples++;
+        this->_calibrationNumSamples++;
         this->_module.readSensor();
         gxbD += this->_module.getGyroX_rads();
         gybD += this->_module.getGyroY_rads();
@@ -79,9 +64,9 @@ int Gyro::_calibration(int durationSeconds) {
     }
 
     // set offsets
-    this->setBiasX_rads(gxbD / _calibrationNumSamples);
-    this->setBiasY_rads(gybD / _calibrationNumSamples);
-    this->setBiasZ_rads(gzbD / _calibrationNumSamples);
+    this->setBiasX_rads(gxbD / this->_calibrationNumSamples);
+    this->setBiasY_rads(gybD / this->_calibrationNumSamples);
+    this->setBiasZ_rads(gzbD / this->_calibrationNumSamples);
 
     return 1;
 }

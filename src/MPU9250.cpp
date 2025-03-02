@@ -5,42 +5,10 @@
 namespace pimu
 {
 
-/* deletes spaces from a string */
-std::string trim(const std::string& str) {
-    auto start = str.begin();
-    while (start != str.end() && std::isspace(*start)) {
-        start++;
-    }
-
-    auto end = str.end();
-    do {
-        end--;
-    } while (std::distance(start, end) > 0 && std::isspace(*end));
-
-    return std::string(start, end + 1);
-}
-
-/* mpu9250 constructor */
-MPU9250::MPU9250(){
-    _address = 0x68; // I2C address
-    _useSPI = false; // set to use I2C
-    _axb = 0.0f;
-    _ayb = 0.0f;
-    _azb = 0.0f;
-
-    _gxb = 0.0f;
-    _gyb = 0.0f;
-    _gzb = 0.0f;
-
-    _hxb = 0.0f;
-    _hyb = 0.0f;
-    _hzb = 0.0f;
-}
+MPU9250::MPU9250() {}
 
 /* starts communication with the MPU-9250 */
 int MPU9250::begin(){
-    if (_initialized) return 1;
-    
     
     // select clock source to gyro
     if(writeRegister(PWR_MGMNT_1,CLOCK_SEL_PLL) < 0){
@@ -146,7 +114,25 @@ int MPU9250::begin(){
     readAK8963Registers(AK8963_HXL,7,_buffer);
 
 
-    _initialized = true;
+    // set gyro and accel range, bandwidth, and srd
+    if (setGyroRange(GYRO_RANGE_250DPS) < 0) {
+        std::cerr<<__FILE__<<__LINE__<<": error."<<std::endl;
+        return -20;
+    }
+    if (setAccelRange(ACCEL_RANGE_2G) < 0) {
+        std::cerr<<__FILE__<<__LINE__<<": error."<<std::endl;
+        return -21;
+    }
+    if (setDlpfBandwidth(DLPF_BANDWIDTH_20HZ) < 0) {
+        std::cerr<<__FILE__<<__LINE__<<": error."<<std::endl;
+        return -22;
+    }
+    if (setSrd(19) < 0) {
+        std::cerr<<__FILE__<<__LINE__<<": error."<<std::endl;
+        return -23;
+    }
+    std::cout << "successfull init\n";
+    initCode = 1;
     return 1;
 }
 
@@ -186,6 +172,7 @@ int MPU9250::setAccelRange(AccelRange range) {
     _useSPIHS = false;
     switch(range) {
     case ACCEL_RANGE_2G: {
+        std::cout << "accel range 2g\n";
         // setting the accel range to 2G
         if(writeRegister(ACCEL_CONFIG,ACCEL_FS_SEL_2G) < 0){
             return -1;
@@ -458,9 +445,9 @@ int MPU9250::readSensor() {
     _hzcounts = (((int16_t)_buffer[19]) << 8) | _buffer[18];
 
     // transform and convert to float values
-    _ax = (((float)(tX[0]*_axcounts + tX[1]*_aycounts + tX[2]*_azcounts) * _accelScale) - _axb)*_axs;
-    _ay = (((float)(tY[0]*_axcounts + tY[1]*_aycounts + tY[2]*_azcounts) * _accelScale) - _ayb)*_ays;
-    _az = (((float)(tZ[0]*_axcounts + tZ[1]*_aycounts + tZ[2]*_azcounts) * _accelScale) - _azb)*_azs;
+    _ax = ((float)(tX[0]*_axcounts + tX[1]*_aycounts + tX[2]*_azcounts) * _accelScale);
+    _ay = ((float)(tY[0]*_axcounts + tY[1]*_aycounts + tY[2]*_azcounts) * _accelScale);
+    _az = ((float)(tZ[0]*_axcounts + tZ[1]*_aycounts + tZ[2]*_azcounts) * _accelScale);
     _gx = ((float)(tX[0]*_gxcounts + tX[1]*_gycounts + tX[2]*_gzcounts) * _gyroScale); 
     _gy = ((float)(tY[0]*_gxcounts + tY[1]*_gycounts + tY[2]*_gzcounts) * _gyroScale); 
     _gz = ((float)(tZ[0]*_gxcounts + tZ[1]*_gycounts + tZ[2]*_gzcounts) * _gyroScale);
@@ -469,21 +456,6 @@ int MPU9250::readSensor() {
     _hz = (((float)(_hzcounts) * _magScaleZ) - _hzb)*_hzs;
     _t = ((((float) _tcounts) - _tempOffset)/_tempScale) + _tempOffset;
     return 1;
-}
-
-/* returns the accelerometer measurement in the x direction, m/s/s */
-float MPU9250::getAccelX_mss() {
-    return _ax;
-}
-
-/* returns the accelerometer measurement in the y direction, m/s/s */
-float MPU9250::getAccelY_mss() {
-    return _ay;
-}
-
-/* returns the accelerometer measurement in the z direction, m/s/s */
-float MPU9250::getAccelZ_mss() {
-    return _az;
 }
 
 /* returns the gyroscope measurement in the x direction, rad/s */
@@ -499,6 +471,21 @@ float MPU9250::getGyroY_rads() {
 /* returns the gyroscope measurement in the z direction, rad/s */
 float MPU9250::getGyroZ_rads() {
     return _gz;
+}
+
+/* returns the accelerometer measurement in the x direction, m/s/s */
+float MPU9250::getAccelX_mss() {
+    return _ax;
+}
+
+/* returns the accelerometer measurement in the y direction, m/s/s */
+float MPU9250::getAccelY_mss() {
+    return _ay;
+}
+
+/* returns the accelerometer measurement in the z direction, m/s/s */
+float MPU9250::getAccelZ_mss() {
+    return _az;
 }
 
 /* returns the magnetometer measurement in the x direction, uT */
@@ -601,7 +588,5 @@ int MPU9250::readAK8963Registers(uint8_t subAddress, uint8_t count, uint8_t* des
     _status = readRegisters(EXT_SENS_DATA_00,count,dest);
     return _status;
 }
-
-
 }
 
