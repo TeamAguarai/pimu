@@ -1,6 +1,7 @@
 #ifdef USING_VSCODE_AS_EDITOR
     #include "MPU9250.h"
     #include "Gyro.h"
+    #include "Accel.h"
 #endif
 
 #include <thread>
@@ -11,10 +12,11 @@ namespace pimu
 class Imu
 {
 public:
-    Imu();
+    Imu(MPU9250 &module);
     
     int begin();
-    
+
+    int calibrateGyro(int durationSeconds);
     int calibrateAccel(int durationSeconds);
     int calibrateAccel(std::string file_to_load_calibration_from);
     
@@ -26,9 +28,10 @@ public:
     float getXAngle();
     float getYAngle();
     
-private:
-    MPU9250 _module;
+    MPU9250 &_module;
+    Accel _accel;
     Gyro _gyro;
+private:
 
     bool _initialized = false;
     
@@ -38,7 +41,6 @@ private:
     const float _d2r = 3.14159265359f/180.0f; 
 
     void _update();
-    int _calibrateGyro(int durationSeconds);
     
 };
 
