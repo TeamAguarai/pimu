@@ -4,6 +4,7 @@ int main() {
     pimu::Imu imu;
     imu.begin();
     int c = 0;
+    imu.calibrateGyro(10);
     imu.setGyroFilters(0.85);
     while (true)
     {
