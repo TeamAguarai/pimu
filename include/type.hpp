@@ -1,14 +1,14 @@
 namespace pimu
 {
 
-/* three axis Sensor return data (gyro, accel or mag) */
+/* three axis sensor data template (gyro, accel or mag) */
 struct Sensor
 {
     /* Sensor axis */
     float x, y, z;
 };
 
-/* mpu module return data (gyro.x, gyro.y, gyro.z, accel.x, accel.y, accel.z) */
+/* mpu module data template (gyro.x, gyro.y, gyro.z, accel.x, accel.y, accel.z) */
 struct MultiSensor 
 {
     /* gyro data */
