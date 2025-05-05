@@ -1,6 +1,7 @@
 import os
 import sys
 import platform
+import getpass # linux
 import datetime
 import re
 from collections import defaultdict
@@ -9,7 +10,7 @@ def get_system_info(output_file, input_folder, files):
     """Retrieve system information for logging purposes."""
     date_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     os_info = platform.system() + " " + platform.release()
-    user_name = os.getlogin()
+    user_name = getpass.getuser()
     files_list = "\n".join(files)
     return (f"File: {output_file}\nCreated by: {user_name}\nDate: {date_time}\n"
             f"OS: {os_info}\nFolder: {input_folder}\n\n"
@@ -102,7 +103,7 @@ def merge_files(input_folder, output_file, file_extension):
 
 if __name__ == "__main__":
     if len(sys.argv) != 4:
-        print("Usage: python merge_files.py <input_folder> <file_extension> <output_file>")
+        print("Usage: python merge.py <input_folder> <file_extension> <output_file>")
         print("Use '*' as <file_extension> to merge all files in the folder.")
     else:
         input_folder = sys.argv[1]
